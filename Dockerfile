@@ -11,11 +11,19 @@ EXPOSE 8000
 
 ARG DEV=false
 
+# postgresql-client -> compilable postgresql package
+# to install this package build-base postgresql-dev musl-dev also need to be installed
+# --virtual creates a separated space to install those dependencies (tmp-build-dev)
+# after installation the space is removed (apk del .tmp-build-dev)
+
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
+    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache --virtual .tmp-build-deps build-base postgresql-dev musl-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; then /py/bin/pip install -r /tmp/requirements.dev.txt; fi && \
     rm -rf /tmp && \
+    apk del .tmp-build-deps && \
     adduser --disabled-password --no-create-home django-user
 
 ENV PATH="/py/bin:$PATH"
