@@ -27,3 +27,5 @@ Create an advanced REST API with Python, Django REST Framework and Docker using 
     docker-compose run --rm app sh -c "python manage.py startapp <name>"
     docker-compose run --rm app sh -c "python manage.py startapp core"
     docker-compose run --rm app sh -c "python manage.py wait_for_db"
+    docker-compose run --rm app sh -c "python manage.py migrate"
+    docker-compose run --rm app sh -c "python manage.py makemigrations"
