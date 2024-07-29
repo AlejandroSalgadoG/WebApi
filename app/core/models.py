@@ -7,15 +7,28 @@ from django.contrib.auth.models import (
 
 
 class UserManager(BaseUserManager):
+    def _create_user_obj(self, email, password=None, **kwargs):
+        if not email:
+            raise ValueError("user must have an email address")
+
+        user = self.model(email=self.normalize_email(email), **kwargs)  # create new user object
+        user.set_password(password)  # hash password
+        return user
+
     # password is set to none to allow the creation of an unusable user for testing
     # this is the default behavior of the django user model
     def create_user(self, email, password=None, **kwargs):
-        if not email:
-            raise ValueError("user must have an email address")
-        user = self.model(email=self.normalize_email(email), **kwargs)  # create new user object
-        user.set_password(password)  # hash password
+        user = self._create_user_obj(email, password, **kwargs)
         user.save(using=self._db)  # best practice is to select database (usefull when working with multiple db)
         return user
+
+    def create_superuser(self, email, password):
+        user = self._create_user_obj(email, password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+        
 
 
 class User(AbstractBaseUser, PermissionsMixin):
