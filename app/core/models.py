@@ -10,6 +10,8 @@ class UserManager(BaseUserManager):
     # password is set to none to allow the creation of an unusable user for testing
     # this is the default behavior of the django user model
     def create_user(self, email, password=None, **kwargs):
+        if not email:
+            raise ValueError("user must have an email address")
         user = self.model(email=self.normalize_email(email), **kwargs)  # create new user object
         user.set_password(password)  # hash password
         user.save(using=self._db)  # best practice is to select database (usefull when working with multiple db)
