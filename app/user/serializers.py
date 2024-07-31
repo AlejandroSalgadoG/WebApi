@@ -15,6 +15,16 @@ class UserSerializer(serializers.ModelSerializer):
         # otherwise the password is saved directly in plain text
         return get_user_model().objects.create_user(**validated_data)
 
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        user = super().update(instance, validated_data)  # update everything but the password
+
+        if password:
+            user.set_password(password)  # hash password
+            user.save()
+
+        return user
+
 
 class AuthTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
