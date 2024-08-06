@@ -4,6 +4,12 @@ from generated.test_pb2_grpc import TestServiceStub
 
 from config import HOST, PORT
 
+
+def iter_test_request():
+    for i in range(3):
+        yield TestRequest(name="alejo", msg=f"hello {i}")
+
+
 if __name__ == '__main__':
     with grpc.insecure_channel(f"{HOST}:{PORT}") as channel:
         client = TestServiceStub(channel)
@@ -26,11 +32,11 @@ if __name__ == '__main__':
                 print("response stream rcp response:")
                 print(reply)
         elif rpc == "3":
-            def iter():
-                for i in range(3):
-                    yield TestRequest(name="alejo", msg=f"hello {i}")
-            multi_reply = client.requestStreamRpc(iter())
+            multi_reply = client.requestStreamRpc(iter_test_request())
             print("request stream rpc response:")
             print(multi_reply)
         elif rpc == "4":
-            raise NotImplementedError("bidirectional rpc")
+            responses = client.bidirectionalStreamRpc(iter_test_request())
+            for response in responses:
+                print("bidirectional stream rpc response:")
+                print(response)

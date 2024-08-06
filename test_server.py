@@ -36,7 +36,11 @@ class TestService(TestServiceServicer):
 
 
     def bidirectionalStreamRpc(self, request_iterator, context):
-        return super().bidirectionalStreamRpc(request_iterator, context)
+        for request in request_iterator:
+            print("bidirectional stream rcp request:")
+            print(request)
+
+            yield TestReply(msg=f"{request.name} {request.msg} - hi")
 
 
 if __name__ == '__main__':
