@@ -1,6 +1,7 @@
 from concurrent import futures
 
 import grpc
+from generated.test_pb2 import TestReply
 from generated.test_pb2_grpc import (
     add_TestServiceServicer_to_server,
     TestServiceServicer,
@@ -11,7 +12,9 @@ from config import HOST, PORT
 
 class TestService(TestServiceServicer):
     def simpleRpc(self, request, context):
-        return super().simpleRpc(request, context)
+        print("simple rcp request:")
+        print(request)
+        return TestReply(msg=f"{request.name} hi")
 
     def responseStreamRpc(self, request, context):
         return super().responseStreamRpc(request, context)

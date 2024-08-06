@@ -1,4 +1,5 @@
 import grpc
+from generated.test_pb2 import TestRequest
 from generated.test_pb2_grpc import TestServiceStub
 
 from config import HOST, PORT
@@ -15,7 +16,10 @@ if __name__ == '__main__':
         rpc = input("> ")
 
         if rpc == "1":
-            raise NotImplementedError("simple rpc")
+            request = TestRequest(name="alejo", msg="hello")
+            reply = client.simpleRpc(request)
+            print("simple rcp response:")
+            print(reply)
         elif rpc == "2":
             raise NotImplementedError("respose stream rpc")
         elif rpc == "3":
