@@ -28,3 +28,16 @@ assert len(content) == 2
 assert content["email"] == EMAIL
 assert content["name"] == NAME
 logging.info("new user created")
+
+################### create token ###################
+logging.info("start creation of new user token")
+response = requests.post(f"{SERVER_URL}/api/user/token/", json=payload)
+content = response.json()
+
+assert response.status_code == 200
+assert len(content) == 1
+assert "token" in content
+
+token = content["token"]
+
+logging.info(f"user token created: {token}")
