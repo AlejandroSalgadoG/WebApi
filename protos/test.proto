@@ -1,0 +1,43 @@
+// RPC config (Remote Procedure Call)
+
+// python -m grpc_tools.protoc -I protos --python_out=./generated --grpc_python_out=./generated protos/test.proto
+
+syntax = "proto3";
+
+package test_rpc;
+
+service TestService {
+  // client sends one request to server and waits for one response
+  rpc simpleRpc(TestRequest) returns (TestReply) {}
+
+  // client sends request to server and gets stream to read sequence of messages
+  // client reads from returned stream until there are no more messages
+  rpc responseStreamRpc(TestRequest) returns (stream TestReply) {}
+
+  // client writes sequence of messages and sends them to the server
+  // when client finish writing messages waits for server to read them all and return one response
+  rpc requestStreamRpc(stream TestRequest) returns (TestMultiReply) {}
+
+  // both sides send a sequence of messages
+  // The two streams operate independently
+  // clients and servers can read and write in whatever order
+  // they could wait to receive all the messages before writing its responses
+  // they can also read a message then write a message
+  // finally they can do some combination of reads and writes
+  // the order of messages in each stream is preserved.
+  rpc bidirectionalStreamRpc(stream TestRequest) returns (stream TestReply) {}
+}
+
+message TestRequest {
+  string name = 1;
+  string msg = 2;
+}
+
+message TestReply {
+  string msg = 1;
+}
+
+message TestMultiReply {
+	string msg = 1;
+	repeated TestRequest request = 2;
+}
