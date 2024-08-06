@@ -21,7 +21,10 @@ if __name__ == '__main__':
             print("simple rcp response:")
             print(reply)
         elif rpc == "2":
-            raise NotImplementedError("respose stream rpc")
+            request = TestRequest(name="alejo", msg="hello")
+            for reply in client.responseStreamRpc(request):
+                print("response stream rcp response:")
+                print(reply)
         elif rpc == "3":
             raise NotImplementedError("request stream rpc")
         elif rpc == "4":

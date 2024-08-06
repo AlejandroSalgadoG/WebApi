@@ -17,7 +17,11 @@ class TestService(TestServiceServicer):
         return TestReply(msg=f"{request.name} hi")
 
     def responseStreamRpc(self, request, context):
-        return super().responseStreamRpc(request, context)
+        print("response stream rcp request:")
+        print(request)
+
+        for i in range(3):
+            yield TestReply(msg=f"{request.name} hi {i+1}")
 
     def requestStreamRpc(self, request_iterator, context):
         return super().requestStreamRpc(request_iterator, context)
