@@ -41,3 +41,14 @@ assert "token" in content
 token = content["token"]
 
 logging.info(f"user token created: {token}")
+
+################### consult user ###################
+logging.info("consulting user information")
+response = requests.get(f"{SERVER_URL}/api/user/me", headers={'Authorization': f'Token {token}'})
+content = response.json()
+
+assert response.status_code == 200
+assert len(content) == 2
+assert content["email"] == EMAIL
+assert content["name"] == NAME
+logging.info("new user consulted")
