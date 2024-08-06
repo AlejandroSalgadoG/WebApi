@@ -1,7 +1,7 @@
 from concurrent import futures
 
 import grpc
-from generated.test_pb2 import TestReply
+from generated.test_pb2 import TestReply, TestMultiReply
 from generated.test_pb2_grpc import (
     add_TestServiceServicer_to_server,
     TestServiceServicer,
@@ -24,7 +24,16 @@ class TestService(TestServiceServicer):
             yield TestReply(msg=f"{request.name} hi {i+1}")
 
     def requestStreamRpc(self, request_iterator, context):
-        return super().requestStreamRpc(request_iterator, context)
+        multi_reply = TestMultiReply()
+        for request in request_iterator:
+            print("request stream rcp request:")
+            print(request)
+
+            multi_reply.request.append(request)
+
+        multi_reply.msg = f"sent {len(multi_reply.request)} requests"
+        return multi_reply
+
 
     def bidirectionalStreamRpc(self, request_iterator, context):
         return super().bidirectionalStreamRpc(request_iterator, context)
