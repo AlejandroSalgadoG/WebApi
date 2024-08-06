@@ -81,3 +81,24 @@ assert content["link"] == LINK
 assert content["description"] == DESCRIPTION
 
 logging.info("new recipe created")
+
+################### consult recipes ###################
+logging.info("start consulting recipies")
+
+response = requests.get(f"{SERVER_URL}/api/recipe/recipes/", headers={'Authorization': f'Token {token}'})
+contents = response.json()
+
+assert response.status_code == 200
+assert len(contents) == 1
+
+content = contents[0]
+
+assert len(content) == 5
+assert "id" in content
+assert content["title"] == TITLE
+assert content["time_minutes"] == MINUTES
+assert content["price"] == PRICE
+assert content["link"] == LINK
+
+recipe_id = content["id"]
+logging.info("done consulting recipies")
