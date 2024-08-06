@@ -102,3 +102,11 @@ assert content["link"] == LINK
 
 recipe_id = content["id"]
 logging.info("done consulting recipies")
+
+################### delete recipe ###################
+logging.info("start deletion of recipie")
+
+response = requests.delete(f"{SERVER_URL}/api/recipe/recipes/{recipe_id}", headers={'Authorization': f'Token {token}'})
+assert response.status_code == 204
+
+logging.info("recipe deleted")
