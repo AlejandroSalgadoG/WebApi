@@ -18,6 +18,7 @@ Create an advanced REST API with Python, Django REST Framework and Docker using 
     docker-compose run --rm app sh -c <command>
     docker-compose up
     docker-compose build
+    docker-compose -f <compose file> <params>
 
 ### Django commands
 
