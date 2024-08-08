@@ -20,11 +20,12 @@ from drf_spectacular.views import (
 )
 from django.contrib import admin
 from django.urls import include, path
+from django.conf.urls.i18n import i18n_patterns
 
-urlpatterns = [
+urlpatterns = i18n_patterns(
     path('admin/', admin.site.urls),
     path('api/schema', SpectacularAPIView.as_view(), name="api-schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
     path("api/user/", include("user.urls")),
     path("api/recipe/", include("recipe.urls")),
-]
+)
