@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Recipe
+from core.models import Recipe, Tag
 from recipe.serializers import RecipeDetailSerializer, RecipeSerializer
 
 RECIPES_URL = reverse("recipe:recipe-list")
@@ -99,3 +99,51 @@ class PrivateRecipeAPITests(TestCase):
         for k, v in payload.items():
             self.assertEqual(getattr(recipe, k), v)
         self.assertEqual(recipe.user, self.user)
+
+    def test_create_recipe_new_tags(self):
+        payload = {
+            "title": "curry",
+            "time_minutes": 30,
+            "price": Decimal("2.50"),
+            "tags": [{"name": "thai"}, {"name": "dinner"}],
+        }
+
+        res = self.client.post(RECIPES_URL, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+
+        recipe = recipes[0]
+        self.assertEqual(recipe.tags.count(), 2)
+        for tag in payload["tags"]:
+            self.assertTrue(
+                recipe.tags.filter(name=tag["name"], user=self.user).exists()
+            )
+
+    def test_create_recipe_existing_tags(self):
+        tag_indian = Tag.objects.create(user=self.user, name="indian")
+
+        payload = {
+            "title": "naan",
+            "time_minutes": 20,
+            "price": Decimal("0.50"),
+            "tags": [{"name": "indian"}, {"name": "breakfast"}]
+        }
+
+        res = self.client.post(RECIPES_URL, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        recipes = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipes.count(), 1)
+
+        recipe = recipes[0]
+        self.assertEqual(recipe.tags.count(), 2)
+
+        self.assertIn(tag_indian, recipe.tags.all())
+        for tag in payload["tags"]:
+            self.assertTrue(
+                recipe.tags.filter(name=tag["name"], user=self.user).exists()
+            )
