@@ -144,3 +144,7 @@ AUTH_USER_MODEL = "core.User"  # set custom user model
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+SPECTACULAR_SETTINGS = {  # allow image upload from swagger
+    "COMPONENT_SPLIT_REQUEST": True,
+}
