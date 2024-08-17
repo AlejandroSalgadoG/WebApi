@@ -1,3 +1,6 @@
+import os
+
+from django.http import FileResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -39,3 +42,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.save()  # save to db
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=["GET"], detail=True, url_path="get-image")
+    def get_image(self, request, pk=None):
+        return FileResponse(self.get_object().image.file.open())
