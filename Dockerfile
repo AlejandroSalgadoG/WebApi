@@ -9,7 +9,9 @@ COPY pyproject.toml /app
 COPY uv.lock /app
 COPY src /app/src
 
-RUN pip install uv && \
+RUN apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache build-base postgresql-dev musl-dev && \
+    pip install uv && \
     uv sync && \
     adduser --disabled-password django-user && \
     chown -R django-user:django-user /app
