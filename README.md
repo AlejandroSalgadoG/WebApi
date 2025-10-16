@@ -7,3 +7,5 @@ docker-compose up
 
 docker compose run --rm app sh -c "uv run src/manage.py makemigrations"
 docker compose run --rm app sh -c "uv run src/manage.py migrate"
+
+docker compose run --rm app sh -c "cd src; uv run manage.py test"
