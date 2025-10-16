@@ -1,0 +1,7 @@
+[project]
+name = "token_auth"
+version = "0.1.0"
+description = "Api with token auth"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
