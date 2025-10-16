@@ -8,3 +8,28 @@ services:
       - ./src:/app/src
     command: >
       sh -c "uv run src/manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=alejo
+      - DB_PASS=password
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - dev-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=alejo
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h db -U alejo -d devdb"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+
+volumes:
+  dev-db-data:
