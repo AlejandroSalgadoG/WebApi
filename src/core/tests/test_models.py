@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from core import models
+
 
 def get_payload():
     return {
@@ -32,3 +34,15 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_summary(self):
+        payload = get_payload()
+        user = get_user_model().objects.create_user(**payload)
+
+        summary = models.Summary.objects.create(
+            user=user,
+            text="Complete text",
+            summary="Summary",
+        )
+
+        self.assertNotEqual(summary, None)
