@@ -8,7 +8,10 @@ from core.models import Summary
 from summary.serializers import SummarySerializer
 
 
-SUMMARY_URL = reverse("summary:summary-list")
+SUMMARY_LIST_URL = reverse("summary:summary-list")
+
+def detail_url(summary_id):
+    return reverse("summary:summary-detail", args=[summary_id])
 
 
 def create_summary(user, **kwargs):
@@ -25,7 +28,7 @@ class PublicSummaryApiTests(TestCase):
         self.client = APIClient()
 
     def test_auth_required(self):
-        res = self.client.get(SUMMARY_URL)
+        res = self.client.get(SUMMARY_LIST_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -46,7 +49,7 @@ class PrivateSummaryApiTests(TestCase):
         create_summary(user=self.user)
         create_summary(user=self.user)
 
-        res = self.client.get(SUMMARY_URL)
+        res = self.client.get(SUMMARY_LIST_URL)
 
         summaries = Summary.objects.all().order_by("-id")
         serializer = SummarySerializer(summaries, many=True)
@@ -65,7 +68,7 @@ class PrivateSummaryApiTests(TestCase):
         create_summary(user=other_user)
         create_summary(user=self.user)
 
-        res = self.client.get(SUMMARY_URL)
+        res = self.client.get(SUMMARY_LIST_URL)
 
         summaries = Summary.objects.filter(user=self.user).order_by("-id")
         serializer = SummarySerializer(summaries, many=True)
@@ -76,9 +79,8 @@ class PrivateSummaryApiTests(TestCase):
     def test_create_summary(self):
         payload = {
             "text": "Example text.",
-            "summary": "Example summary.",
         }
-        res = self.client.post(SUMMARY_URL, payload)
+        res = self.client.post(SUMMARY_LIST_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
@@ -87,3 +89,49 @@ class PrivateSummaryApiTests(TestCase):
         self.assertEqual(summary.user, self.user)
         for k, v in payload.items():
             self.assertEqual(getattr(summary, k), v)
+
+    def test_create_auto_generated_summary(self):
+        payload = {
+            "text": "Example text.",
+        }
+
+        res = self.client.post(SUMMARY_LIST_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        self.assertIn("summary", res.data)
+        self.assertNotEqual(res.data["summary"], "")
+        self.assertEqual(res.data["text"], payload["text"])
+
+        # Verify in database
+        summary = Summary.objects.get(id=res.data["id"])
+        self.assertEqual(summary.text, payload["text"])
+        self.assertNotEqual(summary.summary, "")
+        self.assertEqual(summary.user, self.user)
+
+    def test_create_summary_ignores_provided_summary(self):
+        """Test that provided summary is ignored and auto-generated instead."""
+        payload = {
+            "text": "This is the actual text.",
+            "summary": "This should be ignored.",
+        }
+
+        res = self.client.post(SUMMARY_LIST_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(res.data["summary"], payload["summary"])
+
+    def test_update_summary_regenerates_summary(self):
+        summary = create_summary(user=self.user, text="Original text.", summary="Original summary.")
+
+        payload = {
+            "text": "Updated text that is different.",
+        }
+
+        url = detail_url(summary.id)
+        res = self.client.patch(url, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        summary.refresh_from_db()
+        self.assertEqual(summary.text, payload["text"])
+        self.assertNotEqual(summary.summary, "Original summary.")
