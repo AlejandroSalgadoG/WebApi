@@ -14,4 +14,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('task/', views.TaskCreateView.as_view(), name='task'),
     path('task/<uuid:id>', views.TaskStatusView.as_view(), name='task_status'),
+    path('queue/', views.QueueStatusView.as_view(), name='queue'),
 ]

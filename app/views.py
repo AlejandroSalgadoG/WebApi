@@ -1,11 +1,11 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
 
 from app.models import Info, Task
-from app.process import process_task
+from app.queue_handler import task_queue
 from app.serializers import DateRangeSerializer, InfoSerializer, TaskSerializer
 
 
@@ -58,11 +58,7 @@ class TaskCreateView(generics.CreateAPIView):
             task_type='process',
         )
 
-        # Start processing task (in a real implementation, this would be queued)
-        import threading
-        thread = threading.Thread(target=process_task, args=(task.id, serializer.validated_data))
-        thread.daemon = True
-        thread.start()
+        task_queue.put(task_id=task.id, parameters=serializer.validated_data)
 
         return Response({"id": str(task.id)}, status=status.HTTP_201_CREATED)
 
@@ -75,3 +71,29 @@ class TaskStatusView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Task.objects.filter(user=self.request.user)
+
+
+@extend_schema(
+    responses={
+        200: {
+            'type': 'object',
+            'properties': {
+                'queue_size': {'type': 'integer', 'description': 'Number of tasks waiting in queue'},
+                'active_workers': {'type': 'integer', 'description': 'Number of active worker threads'},
+                'max_workers': {'type': 'integer', 'description': 'Maximum number of worker threads'},
+            }
+        }
+    },
+    summary='Get queue status',
+    description='Returns the current status of the task execution queue.',
+)
+class QueueStatusView(generics.GenericAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, _):
+        return Response({
+            'queue_size': task_queue.inner_queue.qsize(),
+            'active_workers': len([w for w in task_queue.worker_threads if w.is_alive()]),
+            'max_workers': task_queue.max_workers,
+        })
